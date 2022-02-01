@@ -1,9 +1,12 @@
 import csv
 import pathlib
 from pickle import dump
+from datetime import date, datetime
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 directory = pathlib.Path(__file__).parent.resolve()
 
@@ -16,13 +19,43 @@ options.headless = True
 options.add_experimental_option("debuggerAddress", f"127.0.0.1:{port}")
 driver = webdriver.Chrome(chromedriver, options=options)
 
+driver.get("https://www.hellofresh.com/my-account/deliveries/past-deliveries")
+# TODO: Expand out "Show more"
+
 # Get all meals that have been previously ordered. 
 mealTitleXPath = "//h4[@data-test-id='recipe-card-title']"
 pastMealTitles = driver.find_elements(By.XPATH, mealTitleXPath)
 pastMeals = [title.get_attribute('title') for title in pastMealTitles]
 
-# TODO: Add logic to navigate to second page. 
-driver.get("")
+driver.get("https://www.hellofresh.com/my-account/deliveries/menu")
+buttons = WebDriverWait(driver, 6).until(
+    EC.presence_of_all_elements_located((By.XPATH, "//button[@data-test-id='weekly-nav-button-week']"))
+)
+
+# We need to click the button with the closest date after today. 
+today = date.today()
+currentDay = today.day
+currentMonth = today.month
+
+def getDayDelta(button):
+    text = button.get_attribute("innerText")
+    """
+    DAY OF THE WEEK
+    DAY
+    MONTH
+    """
+    _, day, month = text.split()
+    day = int(day)
+    month = datetime.strptime(month, "%b").month
+
+    return date(today.year, month, day) - today
+
+_, button = min([(getDayDelta(button), button) for button in buttons], key=lambda l: l[0])
+button.click()
+
+WebDriverWait(driver, 6).until(
+    EC.presence_of_all_elements_located((By.XPATH, mealTitleXPath))
+)
 
 # Get all meals for the upcoming week, both selected and unselected. 
 # Exclude the premium meals. 
