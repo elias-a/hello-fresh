@@ -7,6 +7,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
 
 directory = pathlib.Path(__file__).parent.resolve()
 
@@ -20,7 +21,19 @@ options.add_experimental_option("debuggerAddress", f"127.0.0.1:{port}")
 driver = webdriver.Chrome(chromedriver, options=options)
 
 driver.get("https://www.hellofresh.com/my-account/deliveries/past-deliveries")
-# TODO: Expand out "Show more"
+
+# Click "Show more" until all past meals are visible. 
+while True:
+    try:
+        # Find and click the element. 
+        clickableElement = driver.find_element(By.XPATH, "//*[text()='Show more']")
+        clickableElement.click()
+    except NoSuchElementException:
+        # We successfully clicked the element. 
+        break
+    except StaleElementReferenceException:
+        # Keep trying. 
+        pass
 
 # Get all meals that have been previously ordered. 
 mealTitleXPath = "//h4[@data-test-id='recipe-card-title']"
@@ -53,6 +66,7 @@ def getDayDelta(button):
 _, button = min([(getDayDelta(button), button) for button in buttons], key=lambda l: l[0])
 button.click()
 
+# TODO: Need some indication that the correct date is selected. 
 WebDriverWait(driver, 6).until(
     EC.presence_of_all_elements_located((By.XPATH, mealTitleXPath))
 )
