@@ -12,7 +12,9 @@ with open("selected-meals.pickle", "rb") as f:
 with open("unselected-meals.pickle", "rb") as f:
     unselectedMeals = load(f)
 
-stopwords = stopwords.words('english')
+englishStopwords = stopwords.words('english')
+frenchStopwords = stopwords.words('french')
+allStopwords = englishStopwords + frenchStopwords
 
 def preprocess(meal):
     # Convert to lowercase
@@ -22,7 +24,7 @@ def preprocess(meal):
     # Tokenize
     meal = word_tokenize(meal)
     # Remove stopwords
-    meal = [token for token in meal if token not in stopwords]
+    meal = [token for token in meal if token not in allStopwords]
 
     return meal
 
