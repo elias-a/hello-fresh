@@ -64,12 +64,21 @@ def getDayDelta(button):
     return date(today.year, month, day) - today
 
 _, button = min([(getDayDelta(button), button) for button in buttons], key=lambda l: l[0])
-button.click()
+buttonDataId = button.get_attribute("data-id")
 
-# TODO: Need some indication that the correct date is selected. 
+# Load the correct URL, and wait for the button that says 
+# Show/Hide nonselected meals. 
+driver.get(f"https://www.hellofresh.com/my-account/deliveries/menu/{buttonDataId}/17028605")
 WebDriverWait(driver, 6).until(
-    EC.presence_of_all_elements_located((By.XPATH, mealTitleXPath))
+    EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'nonselected meals')]"))
 )
+
+try:
+    clickableElement = driver.find_element(By.XPATH, "//*[text()='Show nonselected meals']")
+    clickableElement.click()
+except NoSuchElementException:
+    # This means the nonselected meals are already visible. 
+    pass
 
 # Get all meals for the upcoming week, both selected and unselected. 
 # Exclude the premium meals. 
