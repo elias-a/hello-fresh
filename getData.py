@@ -1,25 +1,12 @@
-import csv
-import pathlib
 from pickle import dump
 from datetime import date, datetime
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
+from helpers import initDriver, getDayDelta
 
-directory = pathlib.Path(__file__).parent.resolve()
-
-with open(f"{directory}/config.csv", "r") as f:
-    reader = csv.reader(f)
-    email, password, chromedriver, port = list(reader)[0]
-
-options = Options()
-options.headless = True
-options.add_experimental_option("debuggerAddress", f"127.0.0.1:{port}")
-driver = webdriver.Chrome(chromedriver, options=options)
-
+driver = initDriver()
 driver.get("https://www.hellofresh.com/my-account/deliveries/past-deliveries")
 
 # Click "Show more" until all past meals are visible. 
@@ -47,23 +34,7 @@ buttons = WebDriverWait(driver, 6).until(
 
 # We need to click the button with the closest date after today. 
 today = date.today()
-currentDay = today.day
-currentMonth = today.month
-
-def getDayDelta(button):
-    text = button.get_attribute("innerText")
-    """
-    DAY OF THE WEEK
-    DAY
-    MONTH
-    """
-    _, day, month = text.split()
-    day = int(day)
-    month = datetime.strptime(month, "%b").month
-
-    return date(today.year, month, day) - today
-
-_, button = min([(getDayDelta(button), button) for button in buttons], key=lambda l: l[0])
+_, button = min([(getDayDelta(button, today), button) for button in buttons], key=lambda l: l[0])
 buttonDataId = button.get_attribute("data-id")
 
 # Load the correct URL, and wait for the button that says 
