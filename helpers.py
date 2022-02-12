@@ -29,4 +29,4 @@ def getDayDelta(button, referenceDate):
     day = int(day)
     month = datetime.strptime(month, "%b").month
 
-    return date(referenceDate.year, month, day) - referenceDate
+    return abs(date(referenceDate.year, month, day) - referenceDate)
