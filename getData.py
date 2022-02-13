@@ -36,7 +36,6 @@ def getUpcomingMeals(driver, selectionDate):
     # We need to click the button with the closest date after today. 
     _, button = min([(getDayDelta(button, selectionDate), button) for button in buttons], key=lambda l: l[0])
     buttonDataId = button.get_attribute("data-id")
-    print(buttonDataId)
 
     # Load the correct URL, and wait for the button that says 
     # Show/Hide nonselected meals. 
@@ -55,6 +54,12 @@ def getUpcomingMeals(driver, selectionDate):
     # Get all meals for the upcoming week, both selected and unselected. 
     # Exclude the premium meals. 
     mealTitleXPath = "//h4[@data-test-id='recipe-card-title']"
+
+    # Ensure that the meals have loaded. 
+    WebDriverWait(driver, 6).until(
+        EC.presence_of_element_located((By.XPATH, f"{mealTitleXPath}"))
+    )
+
     recipeXPath = "div[@data-test-wrapper-id='recipe-component']"
     selectedMealsXPath = "span[@data-translation-id='my-deliveries-experiments.multiple-up.in-your-box']"
     unselectedMealsTitles = driver.find_elements(By.XPATH, f"{mealTitleXPath}[ancestor::{recipeXPath}[not(@data-test-id='recipe-is-premium')][not(descendant::{selectedMealsXPath})]]")
