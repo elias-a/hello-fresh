@@ -52,3 +52,17 @@ def getWordFreqPercentage(word, vocabCounts, vocabLength):
 
 # Use the word frequency percentage to rank the meals for 
 # the upcoming week. 
+with open("upcoming-meals.pickle", "rb") as f:
+    upcomingMeals = load(f)
+
+# Preprocess upcoming meals. 
+upcomingMeals = [(meal, preprocess(meal)) for meal in upcomingMeals]
+
+def computeScore(meal):
+    selectedScore = sum([getWordFreqPercentage(word, selectedCounts, selectedLength) for word in meal])
+    unselectedScore = sum([getWordFreqPercentage(word, unselectedCounts, unselectedLength) for word in meal])
+    return selectedScore - unselectedScore
+
+scores = [(mealName, computeScore(processedMealName)) for mealName, processedMealName in upcomingMeals]
+scores.sort(key=lambda score: score[1], reverse=True)
+print(scores)

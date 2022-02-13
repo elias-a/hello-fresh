@@ -29,7 +29,7 @@ def switch(arg):
         meals = selectedMeals + unselectedMeals
 
         with open("upcoming-meals.pickle", "wb") as f:
-            dump(unselectedMeals, f)
+            dump(meals, f)
 
     driver.quit()
 
