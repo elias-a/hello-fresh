@@ -34,7 +34,9 @@ def switch(arg):
     driver.quit()
 
 def usage():
-    print(f"Usage: python main.py [h | u]")
+    print("Usage: python main.py {h|u}\n"
+        + f"{' ' * 4}h: Get meal history\n"
+        + f"{' ' * 4}u: Get meals for an upcoming week")
 
 try:
     switch(sys.argv[1])
