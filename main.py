@@ -38,16 +38,23 @@ def switch(arg):
 
         driver.quit()
 
-    elif arg == "s":
+    elif arg == "p":
         analyzer = Analyze()
         analyzer.selectMeals()
         print(analyzer.scores)
 
+    elif arg == "s":
+        analyzer = Analyze()
+        analyzer.selectMeals()
+
+
+
 def usage():
-    print("Usage: python main.py {h|u|s}\n"
+    print("Usage: python main.py {h|u|p|s}\n"
         + f"{' ' * 4}h: Get meal history\n"
         + f"{' ' * 4}u: Get meals for an upcoming week\n"
-        + f"{' ' * 4}s: Select meals for an upcoming week"
+        + f"{' ' * 4}p: Predict meal selections for an upcoming week\n"
+        + f"{' ' * 4}s: Save meal selections online"
     )
 
 try:
