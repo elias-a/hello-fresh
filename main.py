@@ -2,7 +2,7 @@ import sys
 from pickle import dump
 from datetime import date
 from ChromeDriver import ChromeDriver
-from getData import getPastMeals, getUpcomingMeals
+from HelloFreshInterface import HelloFreshInterface
 from analyzeData import Analyze
 
 def usage():
@@ -23,10 +23,10 @@ if arg == "h":
     try:
         driver = ChromeDriver("config.ini")
 
-        # 
-        pastMeals = getPastMeals(driver)
+        helloFreshInterface = HelloFreshInterface(driver.driver)
+        pastMeals = helloFreshInterface.getPastMeals()
         today = date.today()
-        selectedMeals, unselectedMeals = getUpcomingMeals(driver, today)
+        selectedMeals, unselectedMeals = helloFreshInterface.getUpcomingMeals(today)
         selectedMeals += pastMeals
 
         with open("selected-meals.pickle", "wb") as f:
@@ -40,8 +40,9 @@ elif arg == "u":
     try:
         driver = ChromeDriver("config.ini")
 
+        helloFreshInterface = HelloFreshInterface(driver.driver)
         selectionDate = date(2021, 2, 27)
-        selectedMeals, unselectedMeals = getUpcomingMeals(driver, selectionDate)
+        selectedMeals, unselectedMeals = helloFreshInterface.getUpcomingMeals(selectionDate)
         meals = selectedMeals + unselectedMeals
 
         with open("upcoming-meals.pickle", "wb") as f:
@@ -57,6 +58,14 @@ elif arg == "p":
 elif arg == "s":
     analyzer = Analyze()
     analyzer.selectMeals()
+    scores = analyzer.scores
 
+    try:
+        driver = ChromeDriver("config.ini")
+
+
+    finally:
+        driver.closeChrome()
+    
 else:
     usage()
