@@ -11,32 +11,34 @@ def switch(arg):
         return
 
     if arg == "h":
-        driver = ChromeDriver("config.ini")
+        try:
+            driver = ChromeDriver("config.ini")
 
-        # 
-        pastMeals = getPastMeals(driver)
-        today = date.today()
-        selectedMeals, unselectedMeals = getUpcomingMeals(driver, today)
-        selectedMeals += pastMeals
+            # 
+            pastMeals = getPastMeals(driver)
+            today = date.today()
+            selectedMeals, unselectedMeals = getUpcomingMeals(driver, today)
+            selectedMeals += pastMeals
 
-        with open("selected-meals.pickle", "wb") as f:
-            dump(selectedMeals, f)
-        with open("unselected-meals.pickle", "wb") as f:
-            dump(unselectedMeals, f)
-
-        driver.closeChrome()
+            with open("selected-meals.pickle", "wb") as f:
+                dump(selectedMeals, f)
+            with open("unselected-meals.pickle", "wb") as f:
+                dump(unselectedMeals, f)
+        finally:
+            driver.closeChrome()
 
     elif arg == "u":
-        driver = ChromeDriver("config.ini")
+        try:
+            driver = ChromeDriver("config.ini")
 
-        selectionDate = date(2021, 2, 27)
-        selectedMeals, unselectedMeals = getUpcomingMeals(driver, selectionDate)
-        meals = selectedMeals + unselectedMeals
+            selectionDate = date(2021, 2, 27)
+            selectedMeals, unselectedMeals = getUpcomingMeals(driver, selectionDate)
+            meals = selectedMeals + unselectedMeals
 
-        with open("upcoming-meals.pickle", "wb") as f:
-            dump(meals, f)
-
-        driver.closeChrome()
+            with open("upcoming-meals.pickle", "wb") as f:
+                dump(meals, f)
+        finally:
+            driver.closeChrome()
 
     elif arg == "p":
         analyzer = Analyze()
