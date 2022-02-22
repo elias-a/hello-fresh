@@ -1,7 +1,7 @@
 import sys
 from pickle import dump
 from datetime import date
-from helpers import initDriver
+from ChromeDriver import ChromeDriver
 from getData import getPastMeals, getUpcomingMeals
 from analyzeData import Analyze
 
@@ -11,7 +11,7 @@ def switch(arg):
         return
 
     if arg == "h":
-        driver = initDriver()
+        driver = ChromeDriver("config.ini")
 
         # 
         pastMeals = getPastMeals(driver)
@@ -24,10 +24,10 @@ def switch(arg):
         with open("unselected-meals.pickle", "wb") as f:
             dump(unselectedMeals, f)
 
-        driver.quit()
+        driver.closeChrome()
 
     elif arg == "u":
-        driver = initDriver()
+        driver = ChromeDriver("config.ini")
 
         selectionDate = date(2021, 2, 27)
         selectedMeals, unselectedMeals = getUpcomingMeals(driver, selectionDate)
@@ -36,7 +36,7 @@ def switch(arg):
         with open("upcoming-meals.pickle", "wb") as f:
             dump(meals, f)
 
-        driver.quit()
+        driver.closeChrome()
 
     elif arg == "p":
         analyzer = Analyze()
@@ -46,8 +46,6 @@ def switch(arg):
     elif arg == "s":
         analyzer = Analyze()
         analyzer.selectMeals()
-
-
 
 def usage():
     print("Usage: python main.py {h|u|p|s}\n"
