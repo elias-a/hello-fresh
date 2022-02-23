@@ -5,6 +5,8 @@ from ChromeDriver import ChromeDriver
 from HelloFreshInterface import HelloFreshInterface
 from analyzeData import Analyze
 
+selectionDate = date(2021, 3, 13)
+
 def usage():
     print("Usage: python main.py {h|u|p|s}\n"
         + f"{' ' * 4}h: Get meal history\n"
@@ -41,7 +43,6 @@ elif arg == "u":
         driver = ChromeDriver("config.ini")
 
         helloFreshInterface = HelloFreshInterface(driver.driver)
-        selectionDate = date(2021, 2, 27)
         selectedMeals, unselectedMeals = helloFreshInterface.getUpcomingMeals(selectionDate)
         meals = selectedMeals + unselectedMeals
 
@@ -60,10 +61,15 @@ elif arg == "s":
     analyzer.selectMeals()
     scores = analyzer.scores
 
+    # These are the 5 meals we'll select. 
+    top5Meals = [meal[0] for meal in scores[:5]]
+    print(top5Meals)
+
     try:
         driver = ChromeDriver("config.ini")
 
-
+        helloFreshInterface = HelloFreshInterface(driver.driver)
+        helloFreshInterface.selectMeals(selectionDate, top5Meals)
     finally:
         driver.closeChrome()
     

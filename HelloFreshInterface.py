@@ -87,3 +87,55 @@ class HelloFreshInterface:
         selectedMeals = [title.get_attribute('title') for title in selectedMealsTitles]
 
         return (selectedMeals, unselectedMeals)
+
+    def selectMeals(self, selectionDate, selectedMeals):
+        self.driver.get("https://www.hellofresh.com/my-account/deliveries/menu")
+        buttons = WebDriverWait(self.driver, 6).until(
+            EC.presence_of_all_elements_located((By.XPATH, "//button[@data-test-id='weekly-nav-button-week']"))
+        )
+
+        # We need to click the button with the closest date after today. 
+        _, button = min([(HelloFreshInterface.getDayDelta(button, selectionDate), button) for button in buttons], key=lambda l: l[0])
+        buttonDataId = button.get_attribute("data-id")
+
+        # Load the correct URL, and wait for the button that says 
+        # Show/Hide nonselected meals. 
+        self.driver.get(f"https://www.hellofresh.com/my-account/deliveries/menu/{buttonDataId}/17028605")
+        WebDriverWait(self.driver, 6).until(
+            EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'nonselected meals')]"))
+        )
+
+        try:
+            clickableElement = self.driver.find_element(By.XPATH, "//*[text()='Show nonselected meals']")
+            clickableElement.click()
+        except NoSuchElementException:
+            # This means the nonselected meals are already visible. 
+            pass
+
+        # Ensure that the meals have loaded. 
+        mealTitleXPath = "//h4[@data-test-id='recipe-card-title']" 
+        WebDriverWait(self.driver, 6).until(
+            EC.presence_of_element_located((By.XPATH, f"{mealTitleXPath}"))
+        )
+
+        # Find all currently selected meals. Remove the incorrectly 
+        # selected meals. 
+        recipeXPath = "div[@data-test-wrapper-id='recipe-component']"
+        selectedMealsXPath = "span[@data-translation-id='my-deliveries-experiments.multiple-up.in-your-box']"
+        decreaseButtonXPath = "//button[@data-test-id='multiple-up-decrease-button']"
+        
+        selectedMealCount = 5
+        for _ in range(selectedMealCount):
+            try:
+                meal = self.driver.find_element(By.XPATH, f"//{recipeXPath}[descendant::{selectedMealsXPath}]")
+                mealTitleElement = meal.find_element(By.XPATH, f".{mealTitleXPath}")
+                mealTitle = mealTitleElement.get_attribute("title")
+                if mealTitle not in selectedMeals:
+                    decreaseButton = meal.find_element(By.XPATH, f".{decreaseButtonXPath}")
+                    decreaseButton.click()
+            except NoSuchElementException:
+                break
+
+        # For the remaining meals that we need to select, click the 
+        # "Add extra meal" button. 
+        
