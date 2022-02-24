@@ -151,3 +151,10 @@ class HelloFreshInterface:
 
             decreaseButton = meal.find_element(By.XPATH, f".{addButtonXPath}")
             decreaseButton.click()
+
+        try:
+            saveButton = self.driver.find_element(By.XPATH, "//button[@data-test-id='SaveButton']")
+            saveButton.click()
+        except NoSuchElementException:
+            # This means there are no changes to save. 
+            pass
