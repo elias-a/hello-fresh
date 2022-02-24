@@ -123,19 +123,29 @@ class HelloFreshInterface:
         recipeXPath = "div[@data-test-wrapper-id='recipe-component']"
         selectedMealsXPath = "span[@data-translation-id='my-deliveries-experiments.multiple-up.in-your-box']"
         decreaseButtonXPath = "//button[@data-test-id='multiple-up-decrease-button']"
-        
-        selectedMealCount = 5
-        for _ in range(selectedMealCount):
-            try:
-                meal = self.driver.find_element(By.XPATH, f"//{recipeXPath}[descendant::{selectedMealsXPath}]")
-                mealTitleElement = meal.find_element(By.XPATH, f".{mealTitleXPath}")
-                mealTitle = mealTitleElement.get_attribute("title")
-                if mealTitle not in selectedMeals:
-                    decreaseButton = meal.find_element(By.XPATH, f".{decreaseButtonXPath}")
-                    decreaseButton.click()
-            except NoSuchElementException:
-                break
+
+        # Find all currently selected meals and note the ones that are 
+        # not included in the list of predicted selected meals. 
+        mealsToRemove = []
+        alreadySelectedMeals = []
+        currentlySelectedMeals = self.driver.find_elements(By.XPATH, f"//{recipeXPath}[descendant::{selectedMealsXPath}]")
+        for meal in currentlySelectedMeals:
+            mealTitleElement = meal.find_element(By.XPATH, f".{mealTitleXPath}")
+            mealTitle = mealTitleElement.get_attribute("title")
+            if mealTitle not in selectedMeals:
+                mealsToRemove.append(mealTitle)
+            else:
+                alreadySelectedMeals.append(mealTitle)
+
+        for meal in mealsToRemove:
+            meal = self.driver.find_element(By.XPATH, f"//{recipeXPath}[descendant::{selectedMealsXPath}][descendant::*[text()='{meal}']]")
+
+            decreaseButton = meal.find_element(By.XPATH, f".{decreaseButtonXPath}")
+            decreaseButton.click()
+
+        mealsToSelect = list(set(selectedMeals) - set(alreadySelectedMeals))
 
         # For the remaining meals that we need to select, click the 
         # "Add extra meal" button. 
-        
+        for meal in selectedMeals:
+            pass
