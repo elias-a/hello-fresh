@@ -118,8 +118,6 @@ class HelloFreshInterface:
             EC.presence_of_element_located((By.XPATH, f"{mealTitleXPath}"))
         )
 
-        # Find all currently selected meals. Remove the incorrectly 
-        # selected meals. 
         recipeXPath = "div[@data-test-wrapper-id='recipe-component']"
         selectedMealsXPath = "span[@data-translation-id='my-deliveries-experiments.multiple-up.in-your-box']"
         decreaseButtonXPath = "//button[@data-test-id='multiple-up-decrease-button']"
@@ -146,6 +144,10 @@ class HelloFreshInterface:
         mealsToSelect = list(set(selectedMeals) - set(alreadySelectedMeals))
 
         # For the remaining meals that we need to select, click the 
-        # "Add extra meal" button. 
-        for meal in selectedMeals:
-            pass
+        # "Add" button. 
+        addButtonXPath = "//button[@data-test-id='multiple-up-add-button']"
+        for meal in mealsToSelect:
+            meal = self.driver.find_element(By.XPATH, f"//{recipeXPath}[descendant::*[text()='{meal}']]")
+
+            decreaseButton = meal.find_element(By.XPATH, f".{addButtonXPath}")
+            decreaseButton.click()
