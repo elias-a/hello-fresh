@@ -1,6 +1,6 @@
 import sys
 from pickle import dump
-from datetime import date
+from datetime import date, datetime
 from ChromeDriver import ChromeDriver
 from HelloFreshInterface import HelloFreshInterface
 from analyzeData import Analyze
@@ -57,10 +57,8 @@ def saveMealSelections(selectionDate):
     finally:
         driver.closeChrome()
 
-selectionDate = date(2022, 4, 17)
-
 def usage():
-    print("Usage: python main.py {h|u|p|s|a}\n"
+    print("Usage: python main.py {h|u|p|s|a} DATE\n"
         + f"{' ' * 4}h: Get meal history\n"
         + f"{' ' * 4}u: Get meals for an upcoming week\n"
         + f"{' ' * 4}p: Predict meal selections for an upcoming week\n"
@@ -69,28 +67,24 @@ def usage():
         + "predicted meal selections"
     )
 
-try:
-    arg = sys.argv[1]
-except IndexError:
+if len(sys.argv) == 3:
+    action = sys.argv[1]
+    selectionDate = datetime.strptime(sys.argv[2], '%m/%d/%Y').date()
+else:
     usage()
     sys.exit(1)
 
-if arg == "h":
+if action == "h":
     getPastMeals()
-
-elif arg == "u":
+elif action == "u":
     getUpcomingMeals(selectionDate)
-
-elif arg == "p":
+elif action == "p":
     predictMealSelections()
-
-elif arg == "s":
+elif action == "s":
     saveMealSelections(selectionDate)
-
-elif arg == "a":
+elif action == "a":
     getPastMeals()
-    getUpcomingMeals()
-    saveMealSelections()
-
+    getUpcomingMeals(selectionDate)
+    saveMealSelections(selectionDate)
 else:
     usage()
