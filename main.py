@@ -5,23 +5,7 @@ from ChromeDriver import ChromeDriver
 from HelloFreshInterface import HelloFreshInterface
 from analyzeData import Analyze
 
-selectionDate = date(2021, 3, 13)
-
-def usage():
-    print("Usage: python main.py {h|u|p|s}\n"
-        + f"{' ' * 4}h: Get meal history\n"
-        + f"{' ' * 4}u: Get meals for an upcoming week\n"
-        + f"{' ' * 4}p: Predict meal selections for an upcoming week\n"
-        + f"{' ' * 4}s: Save meal selections online"
-    )
-
-try:
-    arg = sys.argv[1]
-except IndexError:
-    usage()
-    sys.exit(1)
-
-if arg == "h":
+def getPastMeals():
     try:
         driver = ChromeDriver("config.ini")
 
@@ -38,7 +22,7 @@ if arg == "h":
     finally:
         driver.closeChrome()
 
-elif arg == "u":
+def getUpcomingMeals(selectionDate):
     try:
         driver = ChromeDriver("config.ini")
 
@@ -51,12 +35,12 @@ elif arg == "u":
     finally:
         driver.closeChrome()
 
-elif arg == "p":
+def predictMealSelections():
     analyzer = Analyze()
     analyzer.selectMeals()
     print(analyzer.scores)
 
-elif arg == "s":
+def saveMealSelections(selectionDate):
     analyzer = Analyze()
     analyzer.selectMeals()
     scores = analyzer.scores
@@ -72,6 +56,41 @@ elif arg == "s":
         helloFreshInterface.selectMeals(selectionDate, top5Meals)
     finally:
         driver.closeChrome()
-    
+
+selectionDate = date(2022, 4, 17)
+
+def usage():
+    print("Usage: python main.py {h|u|p|s|a}\n"
+        + f"{' ' * 4}h: Get meal history\n"
+        + f"{' ' * 4}u: Get meals for an upcoming week\n"
+        + f"{' ' * 4}p: Predict meal selections for an upcoming week\n"
+        + f"{' ' * 4}s: Save meal selections online\n"
+        + f"{' ' * 4}a: Get meal history, get upcoming meals, and save "
+        + "predicted meal selections"
+    )
+
+try:
+    arg = sys.argv[1]
+except IndexError:
+    usage()
+    sys.exit(1)
+
+if arg == "h":
+    getPastMeals()
+
+elif arg == "u":
+    getUpcomingMeals(selectionDate)
+
+elif arg == "p":
+    predictMealSelections()
+
+elif arg == "s":
+    saveMealSelections(selectionDate)
+
+elif arg == "a":
+    getPastMeals()
+    getUpcomingMeals()
+    saveMealSelections()
+
 else:
     usage()
