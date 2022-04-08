@@ -31,7 +31,7 @@ class HelloFreshInterface:
             try:
                 # Find and click the element. 
                 clickableElement = self.driver.find_element(By.XPATH, "//*[text()='Show more']")
-                clickableElement.click()
+                self.driver.execute_script("arguments[0].click();", clickableElement)
             except NoSuchElementException:
                 # We successfully clicked the element. 
                 break
