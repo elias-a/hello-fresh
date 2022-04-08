@@ -1,4 +1,5 @@
 import sys
+import pathlib
 from pickle import dump
 from datetime import date, datetime
 from ChromeDriver import ChromeDriver
@@ -7,7 +8,7 @@ from analyzeData import Analyze
 
 def getPastMeals():
     try:
-        driver = ChromeDriver("config.ini")
+        driver = ChromeDriver(f"{pathlib.Path(__file__).parent.resolve()}/config.ini")
 
         helloFreshInterface = HelloFreshInterface(driver.driver)
         pastMeals = helloFreshInterface.getPastMeals()
@@ -24,7 +25,7 @@ def getPastMeals():
 
 def getUpcomingMeals(selectionDate):
     try:
-        driver = ChromeDriver("config.ini")
+        driver = ChromeDriver(f"{pathlib.Path(__file__).parent.resolve()}/config.ini")
 
         helloFreshInterface = HelloFreshInterface(driver.driver)
         selectedMeals, unselectedMeals = helloFreshInterface.getUpcomingMeals(selectionDate)
@@ -50,7 +51,7 @@ def saveMealSelections(selectionDate):
     print(top5Meals)
 
     try:
-        driver = ChromeDriver("config.ini")
+        driver = ChromeDriver(f"{pathlib.Path(__file__).parent.resolve()}/config.ini")
 
         helloFreshInterface = HelloFreshInterface(driver.driver)
         helloFreshInterface.selectMeals(selectionDate, top5Meals)
