@@ -19,8 +19,6 @@ class ChromeDriver:
         return completedProcess.returncode != 0
 
     def initDriver(self):
-        directory = pathlib.Path(__file__).parent.resolve()
-
         chromedriver = self.config["CHROME"]["chromedriverPath"]
         self.chromePort = int(self.config["CHROME"]["chromePort"])
 
@@ -40,9 +38,10 @@ class ChromeDriver:
         chromePath = self.config["CHROME"]["chromePath"]
         chromeUserDataDir = self.config["CHROME"]["chromeUserDataDir"]
         self.chromeProcess = subprocess.Popen([
-            chromePath, 
-            f"--remote-debugging-port={self.chromePort}", 
-            f"--user-data-dir={chromeUserDataDir}"
+            f"{pathlib.Path(__file__).parent.resolve()}/start_chrome.sh",
+            chromePath,
+            str(self.chromePort),
+            chromeUserDataDir
         ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     def closeChrome(self):
