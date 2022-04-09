@@ -6,8 +6,9 @@ from selenium.common.exceptions import NoSuchElementException, StaleElementRefer
 
 class HelloFreshInterface:
 
-    def __init__(self, driver):
+    def __init__(self, driver, subscriptionId):
         self.driver = driver
+        self.subscriptionId = subscriptionId
 
     @staticmethod
     def getDayDelta(button, referenceDate):
@@ -24,7 +25,7 @@ class HelloFreshInterface:
         return abs(date(referenceDate.year, month, day) - referenceDate)
 
     def getPastMeals(self):
-        self.driver.get("https://www.hellofresh.com/my-account/deliveries/past-deliveries")
+        self.driver.get(f"https://www.hellofresh.com/my-account/deliveries/past-deliveries?subscriptionId={self.subscriptionId}")
 
         # Click "Show more" until all past meals are visible. 
         while True:

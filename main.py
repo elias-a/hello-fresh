@@ -2,46 +2,37 @@ import sys
 import pathlib
 from pickle import dump
 from datetime import date, datetime
+from configparser import ConfigParser
 from ChromeDriver import ChromeDriver
 from HelloFreshInterface import HelloFreshInterface
 from analyzeData import Analyze
 
-def getPastMeals():
-    try:
-        driver = ChromeDriver(f"{pathlib.Path(__file__).parent.resolve()}/config.ini")
+def getPastMeals(driver, subscriptionId):
+    helloFreshInterface = HelloFreshInterface(driver.driver, subscriptionId)
+    pastMeals = helloFreshInterface.getPastMeals()
+    today = date.today()
+    selectedMeals, unselectedMeals = helloFreshInterface.getUpcomingMeals(today)
+    selectedMeals += pastMeals
 
-        helloFreshInterface = HelloFreshInterface(driver.driver)
-        pastMeals = helloFreshInterface.getPastMeals()
-        today = date.today()
-        selectedMeals, unselectedMeals = helloFreshInterface.getUpcomingMeals(today)
-        selectedMeals += pastMeals
+    with open("selected-meals.pickle", "wb") as f:
+        dump(selectedMeals, f)
+    with open("unselected-meals.pickle", "wb") as f:
+        dump(unselectedMeals, f)
 
-        with open("selected-meals.pickle", "wb") as f:
-            dump(selectedMeals, f)
-        with open("unselected-meals.pickle", "wb") as f:
-            dump(unselectedMeals, f)
-    finally:
-        driver.closeChrome()
+def getUpcomingMeals(driver, selectionDate, subscriptionId):
+    helloFreshInterface = HelloFreshInterface(driver.driver, subscriptionId)
+    selectedMeals, unselectedMeals = helloFreshInterface.getUpcomingMeals(selectionDate)
+    meals = selectedMeals + unselectedMeals
 
-def getUpcomingMeals(selectionDate):
-    try:
-        driver = ChromeDriver(f"{pathlib.Path(__file__).parent.resolve()}/config.ini")
-
-        helloFreshInterface = HelloFreshInterface(driver.driver)
-        selectedMeals, unselectedMeals = helloFreshInterface.getUpcomingMeals(selectionDate)
-        meals = selectedMeals + unselectedMeals
-
-        with open("upcoming-meals.pickle", "wb") as f:
-            dump(meals, f)
-    finally:
-        driver.closeChrome()
+    with open("upcoming-meals.pickle", "wb") as f:
+        dump(meals, f)
 
 def predictMealSelections():
     analyzer = Analyze()
     analyzer.selectMeals()
     print(analyzer.scores)
 
-def saveMealSelections(selectionDate):
+def saveMealSelections(driver, selectionDate, subscriptionId):
     analyzer = Analyze()
     analyzer.selectMeals()
     scores = analyzer.scores
@@ -50,13 +41,8 @@ def saveMealSelections(selectionDate):
     top5Meals = [meal[0] for meal in scores[:5]]
     print(top5Meals)
 
-    try:
-        driver = ChromeDriver(f"{pathlib.Path(__file__).parent.resolve()}/config.ini")
-
-        helloFreshInterface = HelloFreshInterface(driver.driver)
-        helloFreshInterface.selectMeals(selectionDate, top5Meals)
-    finally:
-        driver.closeChrome()
+    helloFreshInterface = HelloFreshInterface(driver.driver, subscriptionId)
+    helloFreshInterface.selectMeals(selectionDate, top5Meals)
 
 def usage():
     print("Usage: python main.py {h|u|p|s|a} DATE\n"
@@ -75,17 +61,38 @@ else:
     usage()
     sys.exit(1)
 
+config = ConfigParser()
+configPath = f"{pathlib.Path(__file__).parent.resolve()}/config.ini"
+config.read(configPath)
+subscriptionId = config["HELLO_FRESH"]["subscriptionId"]
+
 if action == "h":
-    getPastMeals()
+    try:
+        driver = ChromeDriver(configPath)
+        getPastMeals(driver, subscriptionId)
+    finally:
+        driver.closeChrome()
 elif action == "u":
-    getUpcomingMeals(selectionDate)
+    try:
+        driver = ChromeDriver(configPath)
+        getUpcomingMeals(driver, selectionDate, subscriptionId)
+    finally:
+        driver.closeChrome()
 elif action == "p":
     predictMealSelections()
 elif action == "s":
-    saveMealSelections(selectionDate)
+    try:
+        driver = ChromeDriver(configPath)
+        saveMealSelections(driver, selectionDate, subscriptionId)
+    finally:
+        driver.closeChrome()
 elif action == "a":
-    getPastMeals()
-    getUpcomingMeals(selectionDate)
-    saveMealSelections(selectionDate)
+    try:
+        driver = ChromeDriver(configPath)
+        getPastMeals(driver, subscriptionId)
+        getUpcomingMeals(driver, selectionDate, subscriptionId)
+        saveMealSelections(driver, selectionDate, subscriptionId)
+    finally:
+        driver.closeChrome()
 else:
     usage()

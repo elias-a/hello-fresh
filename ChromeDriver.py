@@ -1,4 +1,6 @@
 import sys
+import os
+import signal
 import pathlib
 import subprocess
 from configparser import ConfigParser
@@ -43,8 +45,8 @@ class ChromeDriver:
             chromePath,
             str(self.chromePort),
             chromeUserDataDir
-        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, preexec_fn=os.setsid)
 
     def closeChrome(self):
-        self.chromeProcess.kill()
+        os.killpg(os.getpgid(self.chromeProcess.pid), signal.SIGTERM)
         self.driver.quit()
