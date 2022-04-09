@@ -1,3 +1,4 @@
+import sys
 import pathlib
 import subprocess
 from configparser import ConfigParser
@@ -27,10 +28,10 @@ class ChromeDriver:
         options.add_experimental_option("debuggerAddress", f"127.0.0.1:{self.chromePort}")
 
         if ChromeDriver.isPortOpen(self.chromePort):
-            self.isNewProcess = True
             self.openChrome()
         else:
-            self.isNewProcess = False
+            print(f"Port {self.chromePort} is taken")
+            sys.exit(1)
 
         self.driver = webdriver.Chrome(chromedriver, options=options)
 
@@ -45,7 +46,5 @@ class ChromeDriver:
         ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     def closeChrome(self):
-        if self.isNewProcess:
-            self.chromeProcess.terminate()
-        
+        self.chromeProcess.kill()
         self.driver.quit()
