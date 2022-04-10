@@ -52,9 +52,9 @@ class Analyze:
         nltk.download('punkt', download_dir=downloadDirectory)
         nltk.data.path.append(downloadDirectory)
 
-        with open("selected-meals.pickle", "rb") as f:
+        with open(f"{pathlib.Path(__file__).parent.resolve()}/selected-meals.pickle", "rb") as f:
             selectedMeals = load(f)
-        with open("unselected-meals.pickle", "rb") as f:
+        with open(f"{pathlib.Path(__file__).parent.resolve()}/unselected-meals.pickle", "rb") as f:
             unselectedMeals = load(f)
 
         englishStopwords = stopwords.words('english')
@@ -76,7 +76,7 @@ class Analyze:
 
         # Use the word frequency percentage to rank the meals for 
         # the upcoming week. 
-        with open("upcoming-meals.pickle", "rb") as f:
+        with open(f"{pathlib.Path(__file__).parent.resolve()}/upcoming-meals.pickle", "rb") as f:
             upcomingMeals = load(f)
 
         # Preprocess upcoming meals. 

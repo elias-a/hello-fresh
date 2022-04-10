@@ -14,9 +14,9 @@ def getPastMeals(driver, subscriptionId):
     selectedMeals, unselectedMeals = helloFreshInterface.getUpcomingMeals(today)
     selectedMeals += pastMeals
 
-    with open("selected-meals.pickle", "wb") as f:
+    with open(f"{pathlib.Path(__file__).parent.resolve()}/selected-meals.pickle", "wb") as f:
         dump(selectedMeals, f)
-    with open("unselected-meals.pickle", "wb") as f:
+    with open(f"{pathlib.Path(__file__).parent.resolve()}/unselected-meals.pickle", "wb") as f:
         dump(unselectedMeals, f)
 
 def getUpcomingMeals(driver, selectionDate, subscriptionId):
@@ -24,7 +24,7 @@ def getUpcomingMeals(driver, selectionDate, subscriptionId):
     selectedMeals, unselectedMeals = helloFreshInterface.getUpcomingMeals(selectionDate)
     meals = selectedMeals + unselectedMeals
 
-    with open("upcoming-meals.pickle", "wb") as f:
+    with open(f"{pathlib.Path(__file__).parent.resolve()}/upcoming-meals.pickle", "wb") as f:
         dump(meals, f)
 
 def predictMealSelections():
