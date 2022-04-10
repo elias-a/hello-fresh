@@ -1,4 +1,5 @@
 import re
+import pathlib
 import nltk
 import pandas as pd
 from pickle import load
@@ -46,8 +47,10 @@ class Analyze:
         return selectedScore - unselectedScore
 
     def selectMeals(self):
-        nltk.download('stopwords')
-        nltk.download('punkt')
+        downloadDirectory = f"{pathlib.Path(__file__).parent.resolve()}/nltk_data"
+        nltk.download('stopwords', download_dir=downloadDirectory)
+        nltk.download('punkt', download_dir=downloadDirectory)
+        nltk.data.path.append(downloadDirectory)
 
         with open("selected-meals.pickle", "rb") as f:
             selectedMeals = load(f)
