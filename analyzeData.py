@@ -48,8 +48,8 @@ class Analyze:
 
     def selectMeals(self):
         downloadDirectory = f"{pathlib.Path(__file__).parent.resolve()}/nltk_data"
-        nltk.download('stopwords', download_dir=downloadDirectory)
-        nltk.download('punkt', download_dir=downloadDirectory)
+        nltk.download('stopwords', download_dir=downloadDirectory, quiet=True)
+        nltk.download('punkt', download_dir=downloadDirectory, quiet=True)
         nltk.data.path.append(downloadDirectory)
 
         with open(f"{pathlib.Path(__file__).parent.resolve()}/selected-meals.pickle", "rb") as f:
