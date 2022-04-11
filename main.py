@@ -5,7 +5,7 @@ from datetime import date, datetime
 from configparser import ConfigParser
 from ChromeDriver import ChromeDriver
 from HelloFreshInterface import HelloFreshInterface
-from analyzeData import Analyze
+from Analyze import Analyze
 
 def getPastMeals(driver, subscriptionId):
     helloFreshInterface = HelloFreshInterface(driver.driver, subscriptionId)
