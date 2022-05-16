@@ -66,7 +66,7 @@ class HelloFreshInterface:
 
         try:
             clickableElement = self.driver.find_element(By.XPATH, "//*[text()='Show nonselected meals']")
-            clickableElement.click()
+            self.driver.execute_script("arguments[0].click();", clickableElement)
         except NoSuchElementException:
             # This means the nonselected meals are already visible. 
             pass
@@ -108,7 +108,7 @@ class HelloFreshInterface:
 
         try:
             clickableElement = self.driver.find_element(By.XPATH, "//*[text()='Show nonselected meals']")
-            clickableElement.click()
+            self.driver.execute_script("arguments[0].click();", clickableElement)
         except NoSuchElementException:
             # This means the nonselected meals are already visible. 
             pass
@@ -140,7 +140,7 @@ class HelloFreshInterface:
             meal = self.driver.find_element(By.XPATH, f"//{recipeXPath}[descendant::{selectedMealsXPath}][descendant::*[text()='{meal}']]")
 
             decreaseButton = meal.find_element(By.XPATH, f".{decreaseButtonXPath}")
-            decreaseButton.click()
+            self.driver.execute_script("arguments[0].click();", decreaseButton)
 
         mealsToSelect = list(set(selectedMeals) - set(alreadySelectedMeals))
 
@@ -151,11 +151,11 @@ class HelloFreshInterface:
             meal = self.driver.find_element(By.XPATH, f"//{recipeXPath}[descendant::*[text()='{meal}']]")
 
             decreaseButton = meal.find_element(By.XPATH, f".{addButtonXPath}")
-            decreaseButton.click()
+            self.driver.execute_script("arguments[0].click();", decreaseButton)
 
         try:
             saveButton = self.driver.find_element(By.XPATH, "//button[@data-test-id='SaveButton']")
-            saveButton.click()
+            self.driver.execute_script("arguments[0].click();", saveButton)
         except NoSuchElementException:
             # This means there are no changes to save. 
             pass
