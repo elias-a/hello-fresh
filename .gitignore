@@ -2,6 +2,7 @@ __pycache__
 .DS_Store
 *.ini
 *.pickle
+chromedriver
 ChromeProfile
 nltk_data
 venv
