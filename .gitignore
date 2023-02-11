@@ -4,3 +4,4 @@ __pycache__
 *.pickle
 ChromeProfile
 nltk_data
+venv
