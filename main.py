@@ -1,6 +1,6 @@
 import sys
 import pathlib
-from pickle import dump
+import pickle
 from datetime import date, datetime
 from configparser import ConfigParser
 from ChromeDriver import ChromeDriver
@@ -10,14 +10,9 @@ from Analyze import Analyze
 def getPastMeals(driver, subscriptionId):
     helloFreshInterface = HelloFreshInterface(driver.driver, subscriptionId)
     pastMeals = helloFreshInterface.getPastMeals()
-    today = date.today()
-    selectedMeals, unselectedMeals = helloFreshInterface.getUpcomingMeals(today)
-    selectedMeals += pastMeals
 
-    with open(f"{pathlib.Path(__file__).parent.resolve()}/selected-meals.pickle", "wb") as f:
-        dump(selectedMeals, f)
-    with open(f"{pathlib.Path(__file__).parent.resolve()}/unselected-meals.pickle", "wb") as f:
-        dump(unselectedMeals, f)
+    with open(f"{pathlib.Path(__file__).parent.resolve()}/past-meals.pickle", "wb") as f:
+        pickle.dump(pastMeals, f)
 
 def getUpcomingMeals(driver, selectionDate, subscriptionId):
     helloFreshInterface = HelloFreshInterface(driver.driver, subscriptionId)
@@ -25,7 +20,7 @@ def getUpcomingMeals(driver, selectionDate, subscriptionId):
     meals = selectedMeals + unselectedMeals
 
     with open(f"{pathlib.Path(__file__).parent.resolve()}/upcoming-meals.pickle", "wb") as f:
-        dump(meals, f)
+        pickle.dump(meals, f)
 
 def predictMealSelections():
     analyzer = Analyze()

@@ -2,13 +2,13 @@ from datetime import date, datetime
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException
 
 class HelloFreshInterface:
-
-    def __init__(self, driver, subscriptionId):
+    def __init__(self, driver, subscriptionId, timeout = 2):
         self.driver = driver
         self.subscriptionId = subscriptionId
+        self._timeout = 2
 
     @staticmethod
     def getDayDelta(button, referenceDate):
@@ -30,15 +30,16 @@ class HelloFreshInterface:
         # Click "Show more" until all past meals are visible. 
         while True:
             try:
-                # Find and click the element. 
-                clickableElement = self.driver.find_element(By.XPATH, "//*[text()='Show more']")
-                self.driver.execute_script("arguments[0].click();", clickableElement)
-            except NoSuchElementException:
-                # We successfully clicked the element. 
-                break
+                # Find and click the element.
+                elementXPath = "//*[text()='Show more']"
+                elementIsLoaded = EC.element_to_be_clickable((By.XPATH, elementXPath))
+                element = WebDriverWait(self.driver, self._timeout).until(elementIsLoaded)
+                self.driver.execute_script("arguments[0].click();", element)
             except StaleElementReferenceException:
-                # Keep trying. 
-                pass
+                # Keep trying.
+                continue
+            except TimeoutException:
+                break
 
         # Get all meals that have been previously ordered. 
         mealTitleXPath = "//h4[@data-test-id='recipe-card-title']"
@@ -53,8 +54,11 @@ class HelloFreshInterface:
             EC.presence_of_all_elements_located((By.XPATH, "//button[@data-test-id='weekly-nav-button-week']"))
         )
 
-        # We need to click the button with the closest date after today. 
-        _, button = min([(HelloFreshInterface.getDayDelta(button, selectionDate), button) for button in buttons], key=lambda l: l[0])
+        # We need to click the button with the closest date after `selectionDate`. 
+        _, button = min([(
+            HelloFreshInterface.getDayDelta(button, selectionDate),
+            button,
+        ) for button in buttons], key=lambda l: l[0])
         buttonDataId = button.get_attribute("data-id")
 
         # Load the correct URL, and wait for the button that says 
@@ -65,9 +69,12 @@ class HelloFreshInterface:
         )
 
         try:
-            clickableElement = self.driver.find_element(By.XPATH, "//*[text()='Show nonselected meals']")
-            self.driver.execute_script("arguments[0].click();", clickableElement)
-        except NoSuchElementException:
+            # Find and click the element.
+            elementXPath = "//*[text()='Show nonselected meals']"
+            elementIsLoaded = EC.element_to_be_clickable((By.XPATH, elementXPath))
+            element = WebDriverWait(self.driver, 7).until(elementIsLoaded)
+            self.driver.execute_script("arguments[0].click();", element)
+        except TimeoutException:
             # This means the nonselected meals are already visible. 
             pass
 
