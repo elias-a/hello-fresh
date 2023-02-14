@@ -17,7 +17,7 @@ class HelloFreshController:
             pickle.dump(pastMeals, f)
 
     def getUpcomingMeals(self):
-        selectedMeals, unselectedMeals = self._helloFreshInterface.getUpcomingMeals(selectionDate)
+        selectedMeals, unselectedMeals = self._helloFreshInterface.getUpcomingMeals()
         meals = selectedMeals + unselectedMeals
 
         with open(f"{pathlib.Path(__file__).parent.resolve()}/upcoming-meals.pickle", "wb") as f:
@@ -37,7 +37,8 @@ class HelloFreshController:
         top5Meals = [meal[0] for meal in scores[:5]]
         print(top5Meals)
 
-        self._helloFreshInterface.selectMeals(selectionDate, top5Meals)
+        selectedMeals, _ = self._helloFreshInterface.getUpcomingMeals()
+        self._helloFreshInterface.selectMeals(selectedMeals, top5Meals)
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
