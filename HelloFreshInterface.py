@@ -1,5 +1,6 @@
 import re
 import time
+import logging
 from datetime import date, timedelta
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -25,6 +26,7 @@ class HelloFreshInterface:
         return (today + delta).strftime('%Y-%m-%d')
 
     def _scrollToBottom(self):
+        logging.info("Trying to scroll to the bottom of the screen...")
         height = self.driver.execute_script("return document.body.scrollHeight")
         while True:
             self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -36,12 +38,15 @@ class HelloFreshInterface:
             height = newHeight
 
     def getPastMeals(self):
-        self.driver.get(f"{self._url}/past-deliveries?subscriptionId={self.subscriptionId}")
+        url = f"{self._url}/past-deliveries?subscriptionId={self.subscriptionId}"
+        logging.info(f"Navigating to {url}...")
+        self.driver.get(url)
 
         # Click "Show more" until all past meals are visible. 
         while True:
             try:
                 # Find and click the element.
+                logging.info("Trying to click \"Show more\" to display past meals...")
                 elementXPath = "//*[text()='Show more']"
                 elementIsLoaded = EC.element_to_be_clickable((By.XPATH, elementXPath))
                 element = WebDriverWait(self.driver, self._timeout).until(elementIsLoaded)
@@ -66,7 +71,9 @@ class HelloFreshInterface:
         self.driver.execute_script("arguments[0].click();", button)
 
     def getUpcomingMeals(self):
-        self.driver.get(f"{self._url}/menu")
+        url = f"{self._url}/menu"
+        logging.info(f"Navigating to {url}...")
+        self.driver.get(url)
         self._navigateToDate()
         self._scrollToBottom()
 
@@ -86,19 +93,25 @@ class HelloFreshInterface:
         return (selectedTitles, unselectedTitles)
 
     def selectMeals(self, selectedMeals, mealsToSelect):
-        self.driver.get(f"{self._url}/menu")
+        url = f"{self._url}/menu"
+        logging.info(f"Navigating to {url}...")
+        self.driver.get(url)
         self._navigateToDate()
         self._scrollToBottom()
 
         mealsToAdd = set(mealsToSelect) - set(selectedMeals)
+        logging.info(f"Adding meals: {mealsToAdd}...")
         mealsToRemove = set(selectedMeals) - set(mealsToSelect)
+        logging.info(f"Removing meals: {mealsToRemove}...")
 
         # If no meals need to be added or removed, exit the method.
         if len(mealsToAdd) == 0 and len(mealsToRemove) == 0:
+            logging.info("No meals to select. Meal selection complete!")
             return
 
         # Remove the selected meals that are not in the list of desired meals.
         for meal in mealsToRemove:
+            logging.info(f"Removing meal: {meal}...")
             removeXPath = f"//button[@title='Remove 1 {meal}']"
             removeIsLoaded = EC.element_to_be_clickable((By.XPATH, removeXPath))
             remove = WebDriverWait(self.driver, self._timeout).until(removeIsLoaded)
@@ -107,6 +120,7 @@ class HelloFreshInterface:
         # Add the meals that are in the list of desired meals but not yet selected.
         mealStartXPath = "ancestor::div[@data-test-wrapper-id='recipe-component' and "
         for meal in mealsToAdd:
+            logging.info(f"Adding meal: {meal}...")
             mealTitleXPath = f"descendant::h4[@title='{meal}']]"
             addXPath = f"//span[text()='Add'][{mealStartXPath + mealTitleXPath}]"
             addIsLoaded = EC.element_to_be_clickable((By.XPATH, addXPath))
@@ -114,12 +128,14 @@ class HelloFreshInterface:
             self.driver.execute_script("arguments[0].click();", add)
 
         # Save the selections.
+        logging.info("Saving the selections...")
         saveXPath = "//button[@data-test-id='SaveButton']"
         saveIsLoaded = EC.element_to_be_clickable((By.XPATH, saveXPath))
         save = WebDriverWait(self.driver, self._timeout).until(saveIsLoaded)
         self.driver.execute_script("arguments[0].click();", save)
 
         # Don't add any extras.
+        logging.info("Not adding any extras...")
         skipXPath = "//button[@data-test-id='skip-extras-button']"
         skipIsLoaded = EC.element_to_be_clickable((By.XPATH, skipXPath))
         skip = WebDriverWait(self.driver, self._timeout).until(skipIsLoaded)
@@ -129,4 +145,5 @@ class HelloFreshInterface:
         completeXPath = "//span[text()='Order complete!']"
         completeIsLoaded = EC.presence_of_element_located((By.XPATH, completeXPath))
         complete = WebDriverWait(self.driver, self._timeout).until(completeIsLoaded)
+        logging.info("Meal selection complete!")
 

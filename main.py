@@ -1,4 +1,5 @@
 import argparse
+import logging
 import pathlib
 import pickle
 from configparser import ConfigParser
@@ -11,15 +12,19 @@ class HelloFreshController:
         self._helloFreshInterface = HelloFreshInterface(driver.driver, subscriptionId)
 
     def getPastMeals(self):
+        logging.info("Getting past meals...")
         pastMeals = self._helloFreshInterface.getPastMeals()
 
+        logging.info(f"{len(pastMeals)} past meals found. Writing to file...")
         with open(f"{pathlib.Path(__file__).parent.resolve()}/past-meals.pickle", "wb") as f:
             pickle.dump(pastMeals, f)
 
     def getUpcomingMeals(self):
+        logging.info("Getting upcoming meals...")
         selectedMeals, unselectedMeals = self._helloFreshInterface.getUpcomingMeals()
         meals = selectedMeals + unselectedMeals
 
+        logging.info(f"{len(meals)} upcoming meals found. Writing to file...")
         with open(f"{pathlib.Path(__file__).parent.resolve()}/upcoming-meals.pickle", "wb") as f:
             pickle.dump(meals, f)
 
@@ -40,6 +45,16 @@ class HelloFreshController:
         selectedMeals, _ = self._helloFreshInterface.getUpcomingMeals()
         self._helloFreshInterface.selectMeals(selectedMeals, top5Meals)
 
+logging.basicConfig(
+    filename="hello-fresh.log",
+    encoding="utf-8",
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)-8s %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+
+logging.info("Starting HelloFresh meal selection program...")
+
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--action",
@@ -55,6 +70,7 @@ configPath = f"{pathlib.Path(__file__).parent.resolve()}/config.ini"
 config.read(configPath)
 subscriptionId = config["HELLO_FRESH"]["subscriptionId"]
 
+logging.info("Opening Chrome...")
 driver = ChromeDriver(configPath)
 helloFreshController = HelloFreshController(driver, subscriptionId)
 try:
@@ -76,7 +92,8 @@ try:
                 "\"action\" should be one of {\"history\", \"upcoming\", \"predict\", \"save\", \"all\"}."
             )
 except Exception as e:
-    print(e)
+    logging.error(e)
 finally:
+    logging.info("Closing Chrome...")
     driver.closeChrome()
 

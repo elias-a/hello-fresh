@@ -6,3 +6,4 @@ chromedriver
 ChromeProfile
 nltk_data
 venv
+*.log
