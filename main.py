@@ -1,6 +1,6 @@
+import os
 import argparse
 import logging
-import pathlib
 import pickle
 from configparser import ConfigParser
 from ChromeDriver import ChromeDriver
@@ -66,12 +66,16 @@ args = parser.parse_args()
 action = args.action
 
 config = ConfigParser()
-configPath = f"{pathlib.Path(__file__).parent.resolve()}/config.ini"
-config.read(configPath)
+config.read(os.path.join(os.path.dirname(__file__), "config.ini"))
+chrome = config["CHROME"]["chrome"]
+port = config["CHROME"]["port"]
+profile = config["CHROME"]["profile"]
 subscriptionId = config["HELLO_FRESH"]["subscriptionId"]
 
 logging.info("Opening Chrome...")
-driver = ChromeDriver(configPath)
+driver = ChromeDriver(chrome, port, profile)
+driver.initDriver()
+
 helloFreshController = HelloFreshController(driver, subscriptionId)
 try:
     match action:

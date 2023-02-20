@@ -11,15 +11,22 @@ async-generator==1.10
 attrs==22.2.0
     # via
     #   outcome
+    #   pytest
     #   trio
 certifi==2022.12.7
     # via selenium
+chromedriver @ git+https://github.com/elias-a/ChromeDriver.git
+    # via -r requirements.in
+chromedriver-binary-auto==0.2.3
+    # via chromedriver
 click==8.1.3
     # via nltk
 h11==0.14.0
     # via wsproto
 idna==3.4
     # via trio
+iniconfig==2.0.0
+    # via pytest
 joblib==1.2.0
     # via nltk
 nltk==3.8.1
@@ -28,10 +35,16 @@ numpy==1.24.2
     # via pandas
 outcome==1.2.0
     # via trio
+packaging==23.0
+    # via pytest
 pandas==1.5.3
     # via -r requirements.in
+pluggy==1.0.0
+    # via pytest
 pysocks==1.7.1
     # via urllib3
+pytest==7.2.1
+    # via chromedriver
 python-dateutil==2.8.2
     # via pandas
 pytz==2022.7.1
@@ -39,7 +52,9 @@ pytz==2022.7.1
 regex==2022.10.31
     # via nltk
 selenium==4.8.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   chromedriver
 six==1.16.0
     # via python-dateutil
 sniffio==1.3.0
