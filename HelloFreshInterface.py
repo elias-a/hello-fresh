@@ -13,7 +13,7 @@ class HelloFreshInterface:
     def __init__(self, driver, subscriptionId, deliveryDayOfWeek = 5, timeout = 3):
         self.driver = driver
         self.subscriptionId = subscriptionId
-        self._timeout = 2
+        self._timeout = timeout
         self._selectionDate = HelloFreshInterface.getNextDeliveryDate(deliveryDayOfWeek)
 
     @staticmethod
@@ -36,6 +36,33 @@ class HelloFreshInterface:
             if newHeight == height:
                 break
             height = newHeight
+
+    def authenticate(self, email, password):
+        logging.info("Attempting to log in...")
+        self.driver.get("https://hellofresh.com/login")
+
+        logging.info("Entering email...")
+        emailXPath = "//input[@id='hf-form-group-username-input']"
+        emailIsLoaded = EC.presence_of_element_located((By.XPATH, emailXPath))
+        emailElement = WebDriverWait(self.driver, self._timeout).until(emailIsLoaded)
+        emailElement.send_keys(email)
+
+        logging.info("Entering password...")
+        passwordXPath = "//input[@id='hf-form-group-password-input']"
+        passwordIsLoaded = EC.presence_of_element_located((By.XPATH, passwordXPath))
+        passwordElement = WebDriverWait(self.driver, self._timeout).until(passwordIsLoaded)
+        passwordElement.send_keys(password)
+
+        logging.info("Logging in...")
+        buttonXPath = "//button[@data-test-id='hf-login-email-password-form-submit-button']"
+        buttonIsClickable = EC.element_to_be_clickable((By.XPATH, buttonXPath))
+        button = WebDriverWait(self.driver, self._timeout).until(buttonIsClickable)
+        self.driver.execute_script("arguments[0].click();", button)
+
+        # Wait for login process to complete.
+        pageIsLoadedXPath = "//a[@title='My Menu']"
+        pageIsLoaded = EC.presence_of_element_located((By.XPATH, pageIsLoadedXPath))
+        WebDriverWait(self.driver, self._timeout).until(pageIsLoaded)
 
     def getPastMeals(self):
         url = f"{self._url}/past-deliveries?subscriptionId={self.subscriptionId}"

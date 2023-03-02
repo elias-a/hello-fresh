@@ -1,4 +1,4 @@
 selenium
 nltk
 pandas
-git+https://github.com/elias-a/ChromeDriver.git
+undetected-chromedriver

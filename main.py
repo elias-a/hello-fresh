@@ -2,14 +2,15 @@ import os
 import argparse
 import logging
 import pickle
+import undetected_chromedriver as uc
 from configparser import ConfigParser
-from ChromeDriver import ChromeDriver
 from HelloFreshInterface import HelloFreshInterface
 from Analyze import Analyze
 
 class HelloFreshController:
-    def __init__(self, driver, subscriptionId):
-        self._helloFreshInterface = HelloFreshInterface(driver.driver, subscriptionId)
+    def __init__(self, driver, subscriptionId, email, password):
+        self._helloFreshInterface = HelloFreshInterface(driver, subscriptionId)
+        self._helloFreshInterface.authenticate(email, password)
 
     def getPastMeals(self):
         logging.info("Getting past meals...")
@@ -67,16 +68,14 @@ action = args.action
 
 config = ConfigParser()
 config.read(os.path.join(os.path.dirname(__file__), "config.ini"))
-chrome = config["CHROME"]["chrome"]
-port = config["CHROME"]["port"]
-profile = config["CHROME"]["profile"]
 subscriptionId = config["HELLO_FRESH"]["subscriptionId"]
+email = config["HELLO_FRESH"]["email"]
+password = config["HELLO_FRESH"]["password"]
 
 logging.info("Opening Chrome...")
-driver = ChromeDriver(chrome, port, profile)
-driver.initDriver()
+driver = uc.Chrome(version_main=109)
 
-helloFreshController = HelloFreshController(driver, subscriptionId)
+helloFreshController = HelloFreshController(driver, subscriptionId, email, password)
 try:
     match action:
         case "history":
@@ -97,7 +96,4 @@ try:
             )
 except Exception as e:
     logging.error(e)
-finally:
-    logging.info("Closing Chrome...")
-    driver.closeChrome()
 
