@@ -16,7 +16,7 @@ class HelloFreshController:
         pastMeals = self._helloFreshInterface.getPastMeals()
 
         logging.info(f"{len(pastMeals)} past meals found. Writing to file...")
-        with open(f"{pathlib.Path(__file__).parent.resolve()}/past-meals.pickle", "wb") as f:
+        with open(os.path.join(os.path.dirname(__file__), "past-meals.pickle"), "wb") as f:
             pickle.dump(pastMeals, f)
 
     def getUpcomingMeals(self):
@@ -25,7 +25,7 @@ class HelloFreshController:
         meals = selectedMeals + unselectedMeals
 
         logging.info(f"{len(meals)} upcoming meals found. Writing to file...")
-        with open(f"{pathlib.Path(__file__).parent.resolve()}/upcoming-meals.pickle", "wb") as f:
+        with open(os.path.join(os.path.dirname(__file__), "upcoming-meals.pickle"), "wb") as f:
             pickle.dump(meals, f)
 
     def predictMealSelections(self):

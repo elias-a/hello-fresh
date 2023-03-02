@@ -1,5 +1,5 @@
+import os
 import re
-import pathlib
 import nltk
 import pandas as pd
 from pickle import load
@@ -47,14 +47,14 @@ class Analyze:
         return selectedScore - unselectedScore
 
     def selectMeals(self):
-        downloadDirectory = f"{pathlib.Path(__file__).parent.resolve()}/nltk_data"
+        downloadDirectory = os.path.join(os.path.dirname(__file__), "nltk_data")
         nltk.download('stopwords', download_dir=downloadDirectory, quiet=True)
         nltk.download('punkt', download_dir=downloadDirectory, quiet=True)
         nltk.data.path.append(downloadDirectory)
 
-        with open(f"{pathlib.Path(__file__).parent.resolve()}/selected-meals.pickle", "rb") as f:
+        with open(os.path.join(os.path.dirname(__file__), "selected-meals.pickle"), "rb") as f:
             selectedMeals = load(f)
-        with open(f"{pathlib.Path(__file__).parent.resolve()}/unselected-meals.pickle", "rb") as f:
+        with open(os.path.join(os.path.dirname(__file__), "unselected-meals.pickle"), "rb") as f:
             unselectedMeals = load(f)
 
         englishStopwords = stopwords.words('english')
@@ -76,7 +76,7 @@ class Analyze:
 
         # Use the word frequency percentage to rank the meals for 
         # the upcoming week. 
-        with open(f"{pathlib.Path(__file__).parent.resolve()}/upcoming-meals.pickle", "rb") as f:
+        with open(os.path.join(os.path.dirname(__file__), "upcoming-meals.pickle"), "rb") as f:
             upcomingMeals = load(f)
 
         # Preprocess upcoming meals. 
