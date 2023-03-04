@@ -2,8 +2,8 @@ import os
 import argparse
 import logging
 import pickle
-import undetected_chromedriver as uc
 from configparser import ConfigParser
+from ChromeDriver import ChromeDriver
 from HelloFreshInterface import HelloFreshInterface
 from Analyze import Analyze
 
@@ -73,9 +73,10 @@ email = config["HELLO_FRESH"]["email"]
 password = config["HELLO_FRESH"]["password"]
 
 logging.info("Opening Chrome...")
-driver = uc.Chrome(version_main=109)
+driver = ChromeDriver()
+driver.initDriver()
 
-helloFreshController = HelloFreshController(driver, subscriptionId, email, password)
+helloFreshController = HelloFreshController(driver.driver, subscriptionId, email, password)
 try:
     match action:
         case "history":
