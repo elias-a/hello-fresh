@@ -14,16 +14,31 @@ class HelloFreshInterface:
         self.driver = driver
         self.subscriptionId = subscriptionId
         self._timeout = timeout
-        self._selectionDate = HelloFreshInterface.getNextDeliveryDate(deliveryDayOfWeek)
+
+        nextDeliveryDate = HelloFreshInterface._getNextDeliveryDate(deliveryDayOfWeek)
+        self._month = nextDeliveryDate["month"]
+        self._day = nextDeliveryDate["day"]
 
     @staticmethod
-    def getNextDeliveryDate(deliveryDayOfWeek):
+    def _getNextDeliveryDate(deliveryDayOfWeek):
         if not (isinstance(deliveryDayOfWeek, int) and deliveryDayOfWeek >= 0 and deliveryDayOfWeek <= 6):
             raise Exception("\"deliveryDayOfWeek\" must be an integer in [0, 6].")
 
         today = date.today()
-        delta = timedelta((7 + deliveryDayOfWeek - today.weekday()) % 7)
-        return (today + delta).strftime('%Y-%m-%d')
+        todayDayOfWeek = today.weekday()
+
+        # Assume the last day to select meals is 5 days
+        # before the delivery date.
+        selectionDayOfWeek = (deliveryDayOfWeek - 5) % 7
+        mod = 14 if todayDayOfWeek > selectionDayOfWeek else 7
+
+        delta = timedelta((7 + deliveryDayOfWeek - todayDayOfWeek) % mod)
+        nextDeliveryDate = today + delta
+
+        return {
+            "month": nextDeliveryDate.strftime("%b"),
+            "day": nextDeliveryDate.strftime("%d"),
+        }
 
     def _scrollToBottom(self):
         logging.info("Trying to scroll to the bottom of the screen...")
@@ -87,12 +102,16 @@ class HelloFreshInterface:
         # Get all meals that have been previously ordered. 
         mealTitleXPath = "//h4[@data-test-id='recipe-card-title']"
         pastMealTitles = self.driver.find_elements(By.XPATH, mealTitleXPath)
-        pastMeals = [title.get_attribute('title') for title in pastMealTitles]
+        pastMeals = [title.get_attribute("title") for title in pastMealTitles]
 
         return pastMeals
 
     def _navigateToDate(self):
-        buttonXPath = "//span[@data-element='Button' and .//span[text()='18'] and .//span[text()='Feb']]"
+        buttonXPath = (
+            "//span[@data-element='Button' and "
+            f".//span[text()='{self._day}'] and "
+            f".//span[text()='{self._month}']]"
+        )
         buttonIsLoaded = EC.element_to_be_clickable((By.XPATH, buttonXPath))
         button = WebDriverWait(self.driver, self._timeout).until(buttonIsLoaded)
         self.driver.execute_script("arguments[0].click();", button)
@@ -101,6 +120,7 @@ class HelloFreshInterface:
         url = f"{self._url}/menu"
         logging.info(f"Navigating to {url}...")
         self.driver.get(url)
+
         self._navigateToDate()
         self._scrollToBottom()
 
