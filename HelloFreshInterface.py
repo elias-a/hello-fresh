@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, StaleElementReferenceException
+from Analyze import Analyze
 
 class HelloFreshInterface:
     _url = "https://www.hellofresh.com/my-account/deliveries"
@@ -79,7 +80,22 @@ class HelloFreshInterface:
         pageIsLoaded = EC.presence_of_element_located((By.XPATH, pageIsLoadedXPath))
         WebDriverWait(self.driver, self._timeout).until(pageIsLoaded)
 
+    def predictAndSelect(self):
+        pastMeals = self.getPastMeals()
+        selectedMeals, unselectedMeals = self.getUpcomingMeals()
+        upcomingMeals = selectedMeals + unselectedMeals
+
+        analyzer = Analyze()
+        scores = analyzer.selectMeals(pastMeals, upcomingMeals)
+
+        # These are the 5 meals we'll select.
+        top5Meals = [meal[0] for meal in scores[:5]]
+        logging.info(f"Top 5 meals by score: {top5Meals}")
+
+        self.selectMeals(selectedMeals, top5Meals)
+
     def getPastMeals(self):
+        logging.info("Getting past meals...")
         url = f"{self._url}/past-deliveries?subscriptionId={self.subscriptionId}"
         logging.info(f"Navigating to {url}...")
         self.driver.get(url)
@@ -104,6 +120,7 @@ class HelloFreshInterface:
         pastMealTitles = self.driver.find_elements(By.XPATH, mealTitleXPath)
         pastMeals = [title.get_attribute("title") for title in pastMealTitles]
 
+        logging.info(f"{len(pastMeals)} past meals found...")
         return pastMeals
 
     def _navigateToDate(self):
@@ -117,6 +134,7 @@ class HelloFreshInterface:
         self.driver.execute_script("arguments[0].click();", button)
 
     def getUpcomingMeals(self):
+        logging.info("Getting upcoming meals...")
         url = f"{self._url}/menu"
         logging.info(f"Navigating to {url}...")
         self.driver.get(url)
@@ -136,9 +154,11 @@ class HelloFreshInterface:
         selectedTitles = [meal.text for meal in selectedMeals]
         unselectedTitles = [meal.text for meal in unselectedMeals]
 
+        logging.info(f"{len(selectedTitles + unselectedTitles)} upcoming meals found...")
         return (selectedTitles, unselectedTitles)
 
     def selectMeals(self, selectedMeals, mealsToSelect):
+        logging.info("Selecting meals...")
         url = f"{self._url}/menu"
         logging.info(f"Navigating to {url}...")
         self.driver.get(url)
@@ -180,15 +200,15 @@ class HelloFreshInterface:
         save = WebDriverWait(self.driver, self._timeout).until(saveIsLoaded)
         self.driver.execute_script("arguments[0].click();", save)
 
-        # Don't add any extras.
-        logging.info("Not adding any extras...")
-        skipXPath = "//button[@data-test-id='skip-extras-button']"
-        skipIsLoaded = EC.element_to_be_clickable((By.XPATH, skipXPath))
-        skip = WebDriverWait(self.driver, self._timeout).until(skipIsLoaded)
-        self.driver.execute_script("arguments[0].click();", skip)
+        # Confirm order.
+        logging.info("Confirming order...")
+        confirmXPath = "//div[text()='Confirm order']"
+        confirmIsLoaded = EC.element_to_be_clickable((By.XPATH, confirmXPath))
+        confirm = WebDriverWait(self.driver, self._timeout).until(confirmIsLoaded)
+        self.driver.execute_script("arguments[0].click();", confirm)
 
         # Wait for processing complete.
-        completeXPath = "//span[text()='Order complete!']"
+        completeXPath = "//div[contains(text(), 'Yum!')]"
         completeIsLoaded = EC.presence_of_element_located((By.XPATH, completeXPath))
         complete = WebDriverWait(self.driver, self._timeout).until(completeIsLoaded)
         logging.info("Meal selection complete!")
