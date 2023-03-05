@@ -14,37 +14,26 @@ class HelloFreshController:
 
     def getPastMeals(self):
         logging.info("Getting past meals...")
-        pastMeals = self._helloFreshInterface.getPastMeals()
-
-        logging.info(f"{len(pastMeals)} past meals found. Writing to file...")
-        with open(os.path.join(os.path.dirname(__file__), "past-meals.pickle"), "wb") as f:
-            pickle.dump(pastMeals, f)
+        self.pastMeals = self._helloFreshInterface.getPastMeals()
+        logging.info(f"{len(self.pastMeals)} past meals found...")
 
     def getUpcomingMeals(self):
         logging.info("Getting upcoming meals...")
         selectedMeals, unselectedMeals = self._helloFreshInterface.getUpcomingMeals()
-        meals = selectedMeals + unselectedMeals
-
-        logging.info(f"{len(meals)} upcoming meals found. Writing to file...")
-        with open(os.path.join(os.path.dirname(__file__), "upcoming-meals.pickle"), "wb") as f:
-            pickle.dump(meals, f)
-
-    def predictMealSelections(self):
-        analyzer = Analyze()
-        analyzer.selectMeals()
-        print(analyzer.scores)
+        self.selectedMeals = selectedMeals
+        self.upcomingMeals = selectedMeals + unselectedMeals
+        logging.info(f"{len(self.upcomingMeals)} upcoming meals found...")
 
     def saveMealSelections(self):
         analyzer = Analyze()
-        analyzer.selectMeals()
+        analyzer.selectMeals(self.pastMeals, self.upcomingMeals)
         scores = analyzer.scores
 
         # These are the 5 meals we'll select. 
         top5Meals = [meal[0] for meal in scores[:5]]
-        print(top5Meals)
+        logging.info(f"Top 5 meals by score: {top5Meals}")
 
-        selectedMeals, _ = self._helloFreshInterface.getUpcomingMeals()
-        self._helloFreshInterface.selectMeals(selectedMeals, top5Meals)
+        self._helloFreshInterface.selectMeals(self.selectedMeals, top5Meals)
 
 logging.basicConfig(
     filename="hello-fresh.log",
@@ -60,7 +49,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--action",
     required=True,
-    choices=["history", "upcoming", "predict", "save", "all"],
+    choices=["history", "upcoming", "save", "all"],
     help="Choose the action to perform",
 )
 args = parser.parse_args()
@@ -83,8 +72,6 @@ try:
             helloFreshController.getPastMeals()
         case "upcoming":
             helloFreshController.getUpcomingMeals()
-        case "predict":
-            helloFreshController.predictMealSelections()
         case "save":
             helloFreshController.saveMealSelections()
         case "all":
@@ -93,7 +80,7 @@ try:
             helloFreshController.saveMealSelections()
         case _:
             raise Exception(
-                "\"action\" should be one of {\"history\", \"upcoming\", \"predict\", \"save\", \"all\"}."
+                "\"action\" should be one of {\"history\", \"upcoming\", \"save\", \"all\"}."
             )
 except Exception as e:
     logging.error(e)

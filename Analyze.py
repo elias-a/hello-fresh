@@ -7,7 +7,6 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 
 class Analyze:
-
     def __init__(self):
         self.stopwords = []
         self.selectedCounts = {}
@@ -20,7 +19,7 @@ class Analyze:
         # Convert to lowercase
         meal = meal.lower()
         # Remove punctuation
-        meal = re.sub(r'[^\w\s]', '', meal)
+        meal = re.sub(r"[^\w\s]", "", meal)
         # Tokenize
         meal = word_tokenize(meal)
         # Remove stopwords
@@ -46,38 +45,24 @@ class Analyze:
             for word in meal])
         return selectedScore - unselectedScore
 
-    def selectMeals(self):
+    def selectMeals(self, pastMeals, upcomingMeals):
         downloadDirectory = os.path.join(os.path.dirname(__file__), "nltk_data")
-        nltk.download('stopwords', download_dir=downloadDirectory, quiet=True)
-        nltk.download('punkt', download_dir=downloadDirectory, quiet=True)
+        nltk.download("stopwords", download_dir=downloadDirectory, quiet=True)
+        nltk.download("punkt", download_dir=downloadDirectory, quiet=True)
         nltk.data.path.append(downloadDirectory)
 
-        with open(os.path.join(os.path.dirname(__file__), "selected-meals.pickle"), "rb") as f:
-            selectedMeals = load(f)
-        with open(os.path.join(os.path.dirname(__file__), "unselected-meals.pickle"), "rb") as f:
-            unselectedMeals = load(f)
-
-        englishStopwords = stopwords.words('english')
-        frenchStopwords = stopwords.words('french')
+        englishStopwords = stopwords.words("english")
+        frenchStopwords = stopwords.words("french")
         allStopwords = englishStopwords + frenchStopwords
 
-        selectedMeals = [self.preprocess(meal) for meal in selectedMeals]
-        unselectedMeals = [self.preprocess(meal) for meal in unselectedMeals]
+        pastMeals = [self.preprocess(meal) for meal in pastMeals]
 
         # Convert meals to a list of words. 
-        selected = pd.Series([word for meal in selectedMeals for word in meal])
-        unselected = pd.Series([word for meal in unselectedMeals for word in meal])
-
-        # Count the appearances of each word. 
-        self.selectedCounts = selected.value_counts()
-        self.unselectedCounts = unselected.value_counts()
-        self.selectedLength = len(selected)
-        self.unselectedLength = len(unselected)
+        meals = pd.Series([word for meal in pastMeals for word in meal])
+        self._wordCounts = meals.value_counts()
 
         # Use the word frequency percentage to rank the meals for 
         # the upcoming week. 
-        with open(os.path.join(os.path.dirname(__file__), "upcoming-meals.pickle"), "rb") as f:
-            upcomingMeals = load(f)
 
         # Preprocess upcoming meals. 
         upcomingMeals = [(meal, self.preprocess(meal)) for meal in upcomingMeals]
@@ -85,3 +70,4 @@ class Analyze:
         scores = [(mealName, self.computeScore(processedMealName)) for mealName, processedMealName in upcomingMeals]
         scores.sort(key=lambda score: score[1], reverse=True)
         self.scores = scores
+

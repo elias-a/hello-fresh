@@ -120,7 +120,6 @@ class HelloFreshInterface:
         url = f"{self._url}/menu"
         logging.info(f"Navigating to {url}...")
         self.driver.get(url)
-
         self._navigateToDate()
         self._scrollToBottom()
 
